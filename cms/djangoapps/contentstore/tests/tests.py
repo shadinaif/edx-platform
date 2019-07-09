@@ -62,8 +62,8 @@ class ContentStoreTestCase(ModuleStoreTestCase):
         """Create the account and check that it worked"""
         resp = self._create_account(username, email, password)
         self.assertEqual(resp.status_code, 200)
-        data = parse_json(resp)
-        self.assertEqual(data['success'], True)
+        json_data = parse_json(resp)
+        self.assertEqual(json_data['success'], True)
 
         # Check both that the user is created, and inactive
         self.assertFalse(user(email).is_active)
@@ -173,7 +173,7 @@ class AuthTestCase(ContentStoreTestCase):
         self.create_account(self.username, self.email, self.pw)
 
         # Not activated yet.  Login should fail.
-        resp = self._login(self.email, self.pw)
+        self._login(self.email, self.pw)
 
         self.activate_user(self.email)
 
