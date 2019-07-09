@@ -45,139 +45,12 @@ import imp
 import os
 import sys
 from datetime import timedelta
-
 import lms.envs.common
 # Although this module itself may not use these imported variables, other dependent modules may.
 from lms.envs.common import (
-    USE_TZ, TECH_SUPPORT_EMAIL, PLATFORM_NAME, PLATFORM_DESCRIPTION, BUGS_EMAIL, DOC_STORE_CONFIG, DATA_DIR,
-    STATIC_ROOT_BASE, LOG_DIR, LOCAL_LOGLEVEL, CERT_QUEUE, PASSWORD_POLICY_COMPLIANCE_ROLLOUT_CONFIG,
-    ALL_LANGUAGES, WIKI_ENABLED, update_module_store_settings, ASSET_IGNORE_REGEX, BASE_COOKIE_DOMAIN, LOGGING_ENV,
-    PARENTAL_CONSENT_AGE_LIMIT, REGISTRATION_EMAIL_PATTERNS_ALLOWED, REGISTRATION_EXTRA_FIELDS, MAINTENANCE_BANNER_TEXT,
-    # The following PROFILE_IMAGE_* settings are included as they are
-    # indirectly accessed through the email opt-in API, which is
-    # technically accessible through the CMS via legacy URLs.
-    PROFILE_IMAGE_BACKEND, PROFILE_IMAGE_DEFAULT_FILENAME, PROFILE_IMAGE_DEFAULT_FILE_EXTENSION,
-    PROFILE_IMAGE_SECRET_KEY, PROFILE_IMAGE_MIN_BYTES, PROFILE_IMAGE_MAX_BYTES, PROFILE_IMAGE_SIZES_MAP,
-    # The following setting is included as it is used to check whether to
-    # display credit eligibility table on the CMS or not.
-    ENABLE_CREDIT_ELIGIBILITY, YOUTUBE_API_KEY,
-    COURSE_MODE_DEFAULTS, DEFAULT_COURSE_ABOUT_IMAGE_URL,
-
-    # User-uploaded content
-    MEDIA_ROOT,
-    MEDIA_URL,
-
-    BRANCH_IO_KEY,
-
-    GOOGLE_ANALYTICS_ACCOUNT,
-
-    CREDIT_PROVIDER_SECRET_KEYS,
-
-    AWS_SES_REGION_NAME,
-    AWS_SES_REGION_ENDPOINT,
-
-    CACHES,
-
-    CONTENTSTORE,
-
-    DATABASES,
-
-    ELASTIC_SEARCH_CONFIG,
-
+    update_module_store_settings,
     # Lazy Gettext
     _,
-
-    # Django REST framework configuration
-    REST_FRAMEWORK,
-
-    STATICI18N_OUTPUT_DIR,
-
-    # Heartbeat
-    HEARTBEAT_CHECKS,
-    HEARTBEAT_EXTENDED_CHECKS,
-    HEARTBEAT_CELERY_TIMEOUT,
-
-    # Theme to use when no site or site theme is defined,
-    DEFAULT_SITE_THEME,
-
-    # Default site to use if no site exists matching request headers
-    SITE_ID,
-
-    # Enable or disable theming
-    ENABLE_COMPREHENSIVE_THEMING,
-    COMPREHENSIVE_THEME_LOCALE_PATHS,
-    COMPREHENSIVE_THEME_DIRS,
-
-    # constants for redirects app
-    REDIRECT_CACHE_TIMEOUT,
-    REDIRECT_CACHE_KEY_PREFIX,
-
-    # This is required for the migrations in oauth_dispatch.models
-    # otherwise it fails saying this attribute is not present in Settings
-    # Although Studio does not enable OAuth2 Provider capability, the new approach
-    # to generating test databases will discover and try to create all tables
-    # and this setting needs to be present
-    OAUTH2_PROVIDER_APPLICATION_MODEL,
-    JWT_AUTH,
-
-    USERNAME_REGEX_PARTIAL,
-    USERNAME_PATTERN,
-
-    # django-debug-toolbar
-    DEBUG_TOOLBAR_PATCH_SETTINGS,
-    BLOCK_STRUCTURES_SETTINGS,
-
-    # File upload defaults
-    FILE_UPLOAD_STORAGE_BUCKET_NAME,
-    FILE_UPLOAD_STORAGE_PREFIX,
-
-    COURSE_ENROLLMENT_MODES,
-    CONTENT_TYPE_GATE_GROUP_IDS,
-
-    HELP_TOKENS_BOOKS,
-
-    ICP_LICENSE,
-    ICP_LICENSE_INFO,
-
-    SUPPORT_SITE_LINK,
-    PASSWORD_RESET_SUPPORT_LINK,
-    ACTIVATION_EMAIL_SUPPORT_LINK,
-    FEEDBACK_SUBMISSION_EMAIL,
-
-    DEFAULT_COURSE_VISIBILITY_IN_CATALOG,
-    DEFAULT_MOBILE_AVAILABLE,
-
-    MOBILE_STORE_URLS,
-
-    FOOTER_ORGANIZATION_IMAGE,
-
-    ORA2_FILE_PREFIX,
-
-    CONTACT_EMAIL,
-
-    DISABLE_ACCOUNT_ACTIVATION_REQUIREMENT_SWITCH,
-
-    GENERATE_PROFILE_SCORES,
-
-    # Video Image settings
-    VIDEO_IMAGE_SETTINGS,
-    VIDEO_IMAGE_MAX_AGE,
-    VIDEO_TRANSCRIPTS_SETTINGS,
-    VIDEO_TRANSCRIPTS_MAX_AGE,
-
-    PLATFORM_FACEBOOK_ACCOUNT,
-    PLATFORM_TWITTER_ACCOUNT,
-
-    RETIRED_USERNAME_PREFIX,
-    RETIRED_USERNAME_FMT,
-    RETIRED_EMAIL_PREFIX,
-    RETIRED_EMAIL_DOMAIN,
-    RETIRED_EMAIL_FMT,
-    RETIRED_USER_SALTS,
-    RETIREMENT_SERVICE_WORKER_USERNAME,
-    RETIREMENT_STATES,
-
-    IDA_LOGOUT_URI_LIST,
 
     # Methods to derive settings
     _make_mako_template_dirs,
@@ -197,12 +70,40 @@ from openedx.core.lib.license import LicenseMixin
 from openedx.core.lib.derived import derived, derived_collection_entry
 from openedx.core.release import doc_version
 
+################ Enable credit eligibility feature ####################
+ENABLE_CREDIT_ELIGIBILITY = True
+
+################################ Block Structures ###################################
+BLOCK_STRUCTURES_SETTINGS = dict(
+    # Delay, in seconds, after a new edit of a course is published
+    # before updating the block structures cache.  This is needed
+    # for a better chance at getting the latest changes when there
+    # are secondary reads in sharded mongoDB clusters. See TNL-5041
+    # for more info.
+    COURSE_PUBLISH_TASK_DELAY=30,
+
+    # Delay, in seconds, between retry attempts if a task fails.
+    TASK_DEFAULT_RETRY_DELAY=30,
+
+    # Maximum number of retries per task.
+    TASK_MAX_RETRIES=5,
+
+    # Backend storage options
+    PRUNING_ACTIVE=False,
+)
+
 ############################ FEATURE CONFIGURATION #############################
 
+PLATFORM_NAME = _('Your Platform Name Here')
+PLATFORM_DESCRIPTION = _('Your Platform Description Here')
+
+PLATFORM_FACEBOOK_ACCOUNT = "http://www.facebook.com/YourPlatformFacebookAccount"
+PLATFORM_TWITTER_ACCOUNT = "@YourPlatformTwitterAccount"
 
 # Dummy secret key for dev/test
 SECRET_KEY = 'dev key'
 FAVICON_PATH = 'images/favicon.ico'
+DEFAULT_COURSE_ABOUT_IMAGE_URL = 'images/pencils.jpg'
 STUDIO_NAME = _("Your Platform Studio")
 STUDIO_SHORT_NAME = _("Studio")
 FEATURES = {
@@ -360,6 +261,24 @@ FEATURES = {
 
 ENABLE_JASMINE = False
 
+# List of logout URIs for each IDA that the learner should be logged out of when they logout of the LMS. Only applies to
+# IDA for which the social auth flow uses DOT (Django OAuth Toolkit).
+IDA_LOGOUT_URI_LIST = []
+
+# Ignore static asset files on import which match this pattern
+ASSET_IGNORE_REGEX = r"(^\._.*$)|(^\.DS_Store$)|(^.*~$)"
+
+# The space is required for space-dependent languages like Arabic and Farsi.
+# However, backward compatibility with Ficus older releases is still maintained (space is still not valid)
+# in the AccountCreationForm and the user_api through the ENABLE_UNICODE_USERNAME feature flag.
+USERNAME_REGEX_PARTIAL = r'[\w .@_+-]+'
+USERNAME_PATTERN = r'(?P<username>{regex})'.format(regex=USERNAME_REGEX_PARTIAL)
+
+###################### Registration ##################################
+# Optional setting to restrict registration / account creation to only emails
+# that match a regex in this list. Set to None to allow any email (default).
+REGISTRATION_EMAIL_PATTERNS_ALLOWED = None
+
 ############################# SOCIAL MEDIA SHARING #############################
 SOCIAL_SHARING_SETTINGS = {
     # Note: Ensure 'CUSTOM_COURSE_URLS' has a matching value in lms/envs/common.py
@@ -367,6 +286,10 @@ SOCIAL_SHARING_SETTINGS = {
 }
 
 SOCIAL_MEDIA_FOOTER_URLS = {}
+
+# This is just a placeholder image.
+# Site operators can customize this with their organization's image.
+FOOTER_ORGANIZATION_IMAGE = "images/logo.png"
 
 ############################# SET PATH INFORMATION #############################
 PROJECT_ROOT = path(__file__).abspath().dirname().dirname()  # /edx-platform/cms
@@ -376,6 +299,7 @@ OPENEDX_ROOT = REPO_ROOT / "openedx"
 CMS_ROOT = REPO_ROOT / "cms"
 LMS_ROOT = REPO_ROOT / "lms"
 ENV_ROOT = REPO_ROOT.dirname()  # virtualenv dir /edx-platform is in
+COURSES_ROOT = ENV_ROOT / "data"
 
 GITHUB_REPO_ROOT = ENV_ROOT / "data"
 
@@ -385,6 +309,18 @@ sys.path.append(COMMON_ROOT / 'djangoapps')
 
 # For geolocation ip database
 GEOIP_PATH = REPO_ROOT / "common/static/data/geoip/GeoLite2-Country.mmdb"
+
+DATA_DIR = COURSES_ROOT
+
+# User-uploaded content
+MEDIA_ROOT = '/edx/var/edxapp/media/'
+MEDIA_URL = '/media/'
+
+######################## BRANCH.IO ###########################
+BRANCH_IO_KEY = ''
+
+######################## GOOGLE ANALYTICS ###########################
+GOOGLE_ANALYTICS_ACCOUNT = None
 
 ############################# TEMPLATE CONFIGURATION #############################
 # Mako templating
@@ -462,6 +398,244 @@ derived_collection_entry('TEMPLATES', 0, 'DIRS')
 derived_collection_entry('TEMPLATES', 1, 'DIRS')
 DEFAULT_TEMPLATE_ENGINE = TEMPLATES[0]
 
+# Source:
+# http://loc.gov/standards/iso639-2/ISO-639-2_utf-8.txt according to http://en.wikipedia.org/wiki/ISO_639-1
+# Note that this is used as the set of choices to the `code` field of the
+# `LanguageProficiency` model.
+ALL_LANGUAGES = [
+    [u"aa", u"Afar"],
+    [u"ab", u"Abkhazian"],
+    [u"af", u"Afrikaans"],
+    [u"ak", u"Akan"],
+    [u"sq", u"Albanian"],
+    [u"am", u"Amharic"],
+    [u"ar", u"Arabic"],
+    [u"an", u"Aragonese"],
+    [u"hy", u"Armenian"],
+    [u"as", u"Assamese"],
+    [u"av", u"Avaric"],
+    [u"ae", u"Avestan"],
+    [u"ay", u"Aymara"],
+    [u"az", u"Azerbaijani"],
+    [u"ba", u"Bashkir"],
+    [u"bm", u"Bambara"],
+    [u"eu", u"Basque"],
+    [u"be", u"Belarusian"],
+    [u"bn", u"Bengali"],
+    [u"bh", u"Bihari languages"],
+    [u"bi", u"Bislama"],
+    [u"bs", u"Bosnian"],
+    [u"br", u"Breton"],
+    [u"bg", u"Bulgarian"],
+    [u"my", u"Burmese"],
+    [u"ca", u"Catalan"],
+    [u"ch", u"Chamorro"],
+    [u"ce", u"Chechen"],
+    [u"zh", u"Chinese"],
+    [u"zh_HANS", u"Simplified Chinese"],
+    [u"zh_HANT", u"Traditional Chinese"],
+    [u"cu", u"Church Slavic"],
+    [u"cv", u"Chuvash"],
+    [u"kw", u"Cornish"],
+    [u"co", u"Corsican"],
+    [u"cr", u"Cree"],
+    [u"cs", u"Czech"],
+    [u"da", u"Danish"],
+    [u"dv", u"Divehi"],
+    [u"nl", u"Dutch"],
+    [u"dz", u"Dzongkha"],
+    [u"en", u"English"],
+    [u"eo", u"Esperanto"],
+    [u"et", u"Estonian"],
+    [u"ee", u"Ewe"],
+    [u"fo", u"Faroese"],
+    [u"fj", u"Fijian"],
+    [u"fi", u"Finnish"],
+    [u"fr", u"French"],
+    [u"fy", u"Western Frisian"],
+    [u"ff", u"Fulah"],
+    [u"ka", u"Georgian"],
+    [u"de", u"German"],
+    [u"gd", u"Gaelic"],
+    [u"ga", u"Irish"],
+    [u"gl", u"Galician"],
+    [u"gv", u"Manx"],
+    [u"el", u"Greek"],
+    [u"gn", u"Guarani"],
+    [u"gu", u"Gujarati"],
+    [u"ht", u"Haitian"],
+    [u"ha", u"Hausa"],
+    [u"he", u"Hebrew"],
+    [u"hz", u"Herero"],
+    [u"hi", u"Hindi"],
+    [u"ho", u"Hiri Motu"],
+    [u"hr", u"Croatian"],
+    [u"hu", u"Hungarian"],
+    [u"ig", u"Igbo"],
+    [u"is", u"Icelandic"],
+    [u"io", u"Ido"],
+    [u"ii", u"Sichuan Yi"],
+    [u"iu", u"Inuktitut"],
+    [u"ie", u"Interlingue"],
+    [u"ia", u"Interlingua"],
+    [u"id", u"Indonesian"],
+    [u"ik", u"Inupiaq"],
+    [u"it", u"Italian"],
+    [u"jv", u"Javanese"],
+    [u"ja", u"Japanese"],
+    [u"kl", u"Kalaallisut"],
+    [u"kn", u"Kannada"],
+    [u"ks", u"Kashmiri"],
+    [u"kr", u"Kanuri"],
+    [u"kk", u"Kazakh"],
+    [u"km", u"Central Khmer"],
+    [u"ki", u"Kikuyu"],
+    [u"rw", u"Kinyarwanda"],
+    [u"ky", u"Kirghiz"],
+    [u"kv", u"Komi"],
+    [u"kg", u"Kongo"],
+    [u"ko", u"Korean"],
+    [u"kj", u"Kuanyama"],
+    [u"ku", u"Kurdish"],
+    [u"lo", u"Lao"],
+    [u"la", u"Latin"],
+    [u"lv", u"Latvian"],
+    [u"li", u"Limburgan"],
+    [u"ln", u"Lingala"],
+    [u"lt", u"Lithuanian"],
+    [u"lb", u"Luxembourgish"],
+    [u"lu", u"Luba-Katanga"],
+    [u"lg", u"Ganda"],
+    [u"mk", u"Macedonian"],
+    [u"mh", u"Marshallese"],
+    [u"ml", u"Malayalam"],
+    [u"mi", u"Maori"],
+    [u"mr", u"Marathi"],
+    [u"ms", u"Malay"],
+    [u"mg", u"Malagasy"],
+    [u"mt", u"Maltese"],
+    [u"mn", u"Mongolian"],
+    [u"na", u"Nauru"],
+    [u"nv", u"Navajo"],
+    [u"nr", u"Ndebele, South"],
+    [u"nd", u"Ndebele, North"],
+    [u"ng", u"Ndonga"],
+    [u"ne", u"Nepali"],
+    [u"nn", u"Norwegian Nynorsk"],
+    [u"nb", u"Bokmål, Norwegian"],
+    [u"no", u"Norwegian"],
+    [u"ny", u"Chichewa"],
+    [u"oc", u"Occitan"],
+    [u"oj", u"Ojibwa"],
+    [u"or", u"Oriya"],
+    [u"om", u"Oromo"],
+    [u"os", u"Ossetian"],
+    [u"pa", u"Panjabi"],
+    [u"fa", u"Persian"],
+    [u"pi", u"Pali"],
+    [u"pl", u"Polish"],
+    [u"pt", u"Portuguese"],
+    [u"ps", u"Pushto"],
+    [u"qu", u"Quechua"],
+    [u"rm", u"Romansh"],
+    [u"ro", u"Romanian"],
+    [u"rn", u"Rundi"],
+    [u"ru", u"Russian"],
+    [u"sg", u"Sango"],
+    [u"sa", u"Sanskrit"],
+    [u"si", u"Sinhala"],
+    [u"sk", u"Slovak"],
+    [u"sl", u"Slovenian"],
+    [u"se", u"Northern Sami"],
+    [u"sm", u"Samoan"],
+    [u"sn", u"Shona"],
+    [u"sd", u"Sindhi"],
+    [u"so", u"Somali"],
+    [u"st", u"Sotho, Southern"],
+    [u"es", u"Spanish"],
+    [u"sc", u"Sardinian"],
+    [u"sr", u"Serbian"],
+    [u"ss", u"Swati"],
+    [u"su", u"Sundanese"],
+    [u"sw", u"Swahili"],
+    [u"sv", u"Swedish"],
+    [u"ty", u"Tahitian"],
+    [u"ta", u"Tamil"],
+    [u"tt", u"Tatar"],
+    [u"te", u"Telugu"],
+    [u"tg", u"Tajik"],
+    [u"tl", u"Tagalog"],
+    [u"th", u"Thai"],
+    [u"bo", u"Tibetan"],
+    [u"ti", u"Tigrinya"],
+    [u"to", u"Tonga (Tonga Islands)"],
+    [u"tn", u"Tswana"],
+    [u"ts", u"Tsonga"],
+    [u"tk", u"Turkmen"],
+    [u"tr", u"Turkish"],
+    [u"tw", u"Twi"],
+    [u"ug", u"Uighur"],
+    [u"uk", u"Ukrainian"],
+    [u"ur", u"Urdu"],
+    [u"uz", u"Uzbek"],
+    [u"ve", u"Venda"],
+    [u"vi", u"Vietnamese"],
+    [u"vo", u"Volapük"],
+    [u"cy", u"Welsh"],
+    [u"wa", u"Walloon"],
+    [u"wo", u"Wolof"],
+    [u"xh", u"Xhosa"],
+    [u"yi", u"Yiddish"],
+    [u"yo", u"Yoruba"],
+    [u"za", u"Zhuang"],
+    [u"zu", u"Zulu"]
+]
+
+#################################### AWS #######################################
+# S3BotoStorage insists on a timeout for uploaded assets. We should make it
+# permanent instead, but rather than trying to figure out exactly where that
+# setting is, I'm just bumping the expiration time to something absurd (100
+# years). This is only used if DEFAULT_FILE_STORAGE is overriden to use S3
+# in the global settings.py
+AWS_SES_REGION_NAME = 'us-east-1'
+AWS_SES_REGION_ENDPOINT = 'email.us-east-1.amazonaws.com'
+
+########################## Parental controls config  #######################
+
+# The age at which a learner no longer requires parental consent, or None
+# if parental consent is never required.
+PARENTAL_CONSENT_AGE_LIMIT = 13
+
+# PROFILE IMAGE CONFIG
+# WARNING: Certain django storage backends do not support atomic
+# file overwrites (including the default, OverwriteStorage) - instead
+# there are separate calls to delete and then write a new file in the
+# storage backend.  This introduces the risk of a race condition
+# occurring when a user uploads a new profile image to replace an
+# earlier one (the file will temporarily be deleted).
+PROFILE_IMAGE_BACKEND = {
+    'class': 'storages.backends.overwrite.OverwriteStorage',
+    'options': {
+        'location': os.path.join(MEDIA_ROOT, 'profile-images/'),
+        'base_url': os.path.join(MEDIA_URL, 'profile-images/'),
+    },
+}
+PROFILE_IMAGE_DEFAULT_FILENAME = 'images/profiles/default'
+PROFILE_IMAGE_DEFAULT_FILE_EXTENSION = 'png'
+# This secret key is used in generating unguessable URLs to users'
+# profile images.  Once it has been set, changing it will make the
+# platform unaware of current image URLs, resulting in reverting all
+# users' profile images to the default placeholder image.
+PROFILE_IMAGE_SECRET_KEY = 'placeholder secret key'
+PROFILE_IMAGE_MAX_BYTES = 1024 * 1024
+PROFILE_IMAGE_MIN_BYTES = 100
+PROFILE_IMAGE_SIZES_MAP = {
+    'full': 500,
+    'large': 120,
+    'medium': 50,
+    'small': 30
+}
+
 ##############################################################################
 
 EDX_ROOT_URL = ''
@@ -473,6 +647,14 @@ AUTHENTICATION_BACKENDS = [
     'rules.permissions.ObjectPermissionBackend',
     'openedx.core.djangoapps.oauth_dispatch.dot_overrides.backends.EdxRateLimitedAllowAllUsersModelBackend',
 ]
+
+STATIC_ROOT_BASE = '/edx/var/edxapp/staticfiles'
+
+# License for serving content in China
+ICP_LICENSE = None
+ICP_LICENSE_INFO = {}
+
+LOGGING_ENV = 'sandbox'
 
 LMS_BASE = 'localhost:18000'
 LMS_ROOT_URL = "https://localhost:18000"
@@ -487,9 +669,38 @@ derived('FRONTEND_LOGOUT_URL')
 
 CMS_BASE = 'localhost:18010'
 
+LOG_DIR = '/edx/var/log/edx'
+
+LOCAL_LOGLEVEL = "INFO"
+
+MAINTENANCE_BANNER_TEXT = 'Sample banner message'
+
+WIKI_ENABLED = True
+
+CERT_QUEUE = 'certificates'
 # List of logout URIs for each IDA that the learner should be logged out of when they logout of
 # Studio. Only applies to IDA for which the social auth flow uses DOT (Django OAuth Toolkit).
 IDA_LOGOUT_URI_LIST = []
+
+COURSE_MODE_DEFAULTS = {
+    'bulk_sku': None,
+    'currency': 'usd',
+    'description': None,
+    'expiration_datetime': None,
+    'min_price': 0,
+    'name': _('Audit'),
+    'sku': None,
+    'slug': 'audit',
+    'suggested_prices': '',
+}
+
+ELASTIC_SEARCH_CONFIG = [
+    {
+        'use_ssl': False,
+        'host': 'localhost',
+        'port': 9200
+    }
+]
 
 # These are standard regexes for pulling out info like course_ids, usage_ids, etc.
 # They are used so that URLs with deprecated-format strings still work.
@@ -507,6 +718,25 @@ CSRF_COOKIE_SECURE = False
 
 CROSS_DOMAIN_CSRF_COOKIE_DOMAIN = ''
 CROSS_DOMAIN_CSRF_COOKIE_NAME = ''
+
+######################### Django Rest Framework ########################
+
+REST_FRAMEWORK = {
+    'DEFAULT_PAGINATION_CLASS': 'edx_rest_framework_extensions.paginators.DefaultPagination',
+    'DEFAULT_RENDERER_CLASSES': (
+        'rest_framework.renderers.JSONRenderer',
+    ),
+    'PAGE_SIZE': 10,
+    'URL_FORMAT_OVERRIDE': None,
+    'DEFAULT_THROTTLE_RATES': {
+        'user': '60/minute',
+        'service_user': '120/minute',
+        'registration_validation': '30/minute',
+    },
+}
+
+# If this is true, random scores will be generated for the purpose of debugging the profile graphs
+GENERATE_PROFILE_SCORES = False
 
 #################### CAPA External Code Evaluation #############################
 XQUEUE_INTERFACE = {
@@ -627,7 +857,104 @@ XBLOCK_SELECT_FUNCTION = prefer_xmodules
 # Paths to wrapper methods which should be applied to every XBlock's FieldData.
 XBLOCK_FIELD_DATA_WRAPPERS = ()
 
+############################ ORA 2 ############################################
+
+# By default, don't use a file prefix
+ORA2_FILE_PREFIX = None
+
+# Default File Upload Storage bucket and prefix. Used by the FileUpload Service.
+FILE_UPLOAD_STORAGE_BUCKET_NAME = 'SET-ME-PLEASE (ex. bucket-name)'
+FILE_UPLOAD_STORAGE_PREFIX = 'submissions_attachments'
+
+############## Settings for Course Enrollment Modes ######################
+# The min_price key refers to the minimum price allowed for an instance
+# of a particular type of course enrollment mode. This is not to be confused
+# with the min_price field of the CourseMode model, which refers to the actual
+# price of the CourseMode.
+COURSE_ENROLLMENT_MODES = {
+    "audit": {
+        "id": 1,
+        "slug": "audit",
+        "display_name": _("Audit"),
+        "min_price": 0,
+    },
+    "verified": {
+        "id": 2,
+        "slug": "verified",
+        "display_name": _("Verified"),
+        "min_price": 1,
+    },
+    "professional": {
+        "id": 3,
+        "slug": "professional",
+        "display_name": _("Professional"),
+        "min_price": 1,
+    },
+    "no-id-professional": {
+        "id": 4,
+        "slug": "no-id-professional",
+        "display_name": _("No-Id-Professional"),
+        "min_price": 0,
+    },
+    "credit": {
+        "id": 5,
+        "slug": "credit",
+        "display_name": _("Credit"),
+        "min_price": 0,
+    },
+    "honor": {
+        "id": 6,
+        "slug": "honor",
+        "display_name": _("Honor"),
+        "min_price": 0,
+    },
+    "masters": {
+        "id": 7,
+        "slug": "masters",
+        "display_name": _("Master's"),
+        "min_price": 0,
+    },
+}
+
+CONTENT_TYPE_GATE_GROUP_IDS = {
+    'limited_access': 1,
+    'full_access': 2,
+}
+
+############## Settings for RedirectMiddleware ###############
+
+# Setting this to None causes Redirect data to never expire
+# The cache is cleared when Redirect models are saved/deleted
+REDIRECT_CACHE_TIMEOUT = None  # The length of time we cache Redirect model data
+REDIRECT_CACHE_KEY_PREFIX = 'redirects'
+
 ############################ Modulestore Configuration ################################
+
+DOC_STORE_CONFIG = {
+    'host': 'localhost',
+    'db': 'xmodule',
+    'collection': 'modulestore',
+    # If 'asset_collection' defined, it'll be used
+    # as the collection name for asset metadata.
+    # Otherwise, a default collection name will be used.
+}
+
+CONTENTSTORE = {
+    'ENGINE': 'xmodule.contentstore.mongo.MongoContentStore',
+    # connection strings are duplicated temporarily for
+    # backward compatibility
+    'OPTIONS': {
+        'db': 'edxapp',
+        'host': 'localhost',
+        'password': 'edxapp',
+        'port': 27017,
+        'user': 'edxapp',
+        'ssl': False
+    },
+    'ADDITIONAL_OPTIONS': {},
+    'DOC_STORE_CONFIG': DOC_STORE_CONFIG
+}
+
 MODULESTORE_BRANCH = 'draft-preferred'
 
 MODULESTORE = {
@@ -665,6 +992,43 @@ MODULESTORE = {
 # require student context.
 MODULESTORE_FIELD_OVERRIDE_PROVIDERS = ()
 
+DATABASES = {
+    # edxapp's edxapp-migrate scripts and the edxapp_migrate play
+    # will ensure that any DB not named read_replica will be migrated
+    # for both the lms and cms.
+    'default': {
+        'ATOMIC_REQUESTS': True,
+        'CONN_MAX_AGE': 0,
+        'ENGINE': 'django.db.backends.mysql',
+        'HOST': 'localhost',
+        'NAME': 'edxapp',
+        'OPTIONS': {},
+        'PASSWORD': 'password',
+        'PORT': '3306',
+        'USER': 'edxapp001'
+    },
+    'read_replica': {
+        'CONN_MAX_AGE': 0,
+        'ENGINE': 'django.db.backends.mysql',
+        'HOST': 'localhost',
+        'NAME': 'dxapp',
+        'OPTIONS': {},
+        'PASSWORD': 'password',
+        'PORT': '3306',
+        'USER': 'edxapp001'
+    },
+    'student_module_history': {
+        'CONN_MAX_AGE': 0,
+        'ENGINE': 'django.db.backends.mysql',
+        'HOST': 'localhost',
+        'NAME': 'edxapp_csmh',
+        'OPTIONS': {},
+        'PASSWORD': 'password',
+        'PORT': '3306',
+        'USER': 'edxapp'
+    }
+}
+
 #################### Python sandbox ############################################
 
 CODE_JAIL = {
@@ -699,8 +1063,40 @@ CODE_JAIL = {
 
 COURSES_WITH_UNSAFE_CODE = []
 
+################################ Settings for JWTs ################################
+
+JWT_AUTH = {
+    'JWT_VERIFY_EXPIRATION': True,
+
+    'JWT_PAYLOAD_GET_USERNAME_HANDLER': lambda d: d.get('username'),
+    'JWT_LEEWAY': 1,
+    'JWT_DECODE_HANDLER': 'edx_rest_framework_extensions.auth.jwt.decoder.jwt_decode_handler',
+
+    'JWT_AUTH_COOKIE': 'edx-jwt-cookie',
+
+    # Number of seconds before JWTs expire
+    'JWT_EXPIRATION': 30,
+    'JWT_IN_COOKIE_EXPIRATION': 60 * 60,
+
+    'JWT_LOGIN_CLIENT_ID': 'login-service-client-id',
+    'JWT_LOGIN_SERVICE_USERNAME': 'login_service_user',
+
+    'JWT_SUPPORTED_VERSION': '1.2.0',
+
+    'JWT_ALGORITHM': 'HS256',
+    'JWT_SECRET_KEY': SECRET_KEY,
+
+    'JWT_SIGNING_ALGORITHM': 'RS512',
+    'JWT_PRIVATE_SIGNING_JWK': None,
+    'JWT_PUBLIC_SIGNING_JWK_SET': None,
+
+    'JWT_ISSUER': 'change-me',
+    'JWT_AUDIENCE': 'change-me',
+}
+
 ############################ DJANGO_BUILTINS ################################
 # Change DEBUG in your environment settings files, not here
+USE_TZ = True
 DEBUG = False
 SESSION_COOKIE_SECURE = False
 SESSION_SAVE_EVERY_REQUEST = False
@@ -713,7 +1109,7 @@ SITE_NAME = "localhost"
 HTTPS = 'on'
 ROOT_URLCONF = 'cms.urls'
 
-COURSE_IMPORT_EXPORT_BUCKET = {}
+COURSE_IMPORT_EXPORT_BUCKET = ''
 ALTERNATE_WORKER_QUEUES = 'lms'
 
 STATIC_URL_BASE = '/static/'
@@ -723,6 +1119,7 @@ X_FRAME_OPTIONS = 'DENY'
 GIT_REPO_EXPORT_DIR = '/edx/var/edxapp/export_course_repos'
 
 # Email
+TECH_SUPPORT_EMAIL = 'technical@example.com'
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 EMAIL_HOST = 'localhost'
 EMAIL_PORT = 25
@@ -731,7 +1128,6 @@ EMAIL_HOST_USER = ''
 EMAIL_HOST_PASSWORD = ''
 DEFAULT_FROM_EMAIL = 'registration@example.com'
 DEFAULT_FEEDBACK_EMAIL = 'feedback@example.com'
-TECH_SUPPORT_EMAIL = 'technical@example.com'
 TECH_SUPPORT_EMAIL = 'technical@example.com'
 CONTACT_EMAIL = 'info@example.com'
 BUGS_EMAIL = 'bugs@example.com'
@@ -768,14 +1164,17 @@ LANGUAGES = lms.envs.common.LANGUAGES
 LANGUAGE_DICT = dict(LANGUAGES)
 
 # Languages supported for custom course certificate templates
-CERTIFICATE_TEMPLATE_LANGUAGES = {}
+CERTIFICATE_TEMPLATE_LANGUAGES = {
+    'en': 'English',
+    'es': 'Español',
+}
 
 USE_I18N = True
 USE_L10N = True
 
 STATICI18N_ROOT = PROJECT_ROOT / "static"
+STATICI18N_OUTPUT_DIR = "js/i18n"
 
-# Localization strings (e.g. django.po) are under these directories
 LOCALE_PATHS = _make_locale_paths
 derived('LOCALE_PATHS')
 
@@ -984,6 +1383,21 @@ WEBPACK_LOADER = {
 }
 WEBPACK_CONFIG_PATH = 'webpack.prod.config.js'
 
+############################## HEARTBEAT ######################################
+
+# Checks run in normal mode by the heartbeat djangoapp
+HEARTBEAT_CHECKS = [
+    'openedx.core.djangoapps.heartbeat.default_checks.check_modulestore',
+    'openedx.core.djangoapps.heartbeat.default_checks.check_database',
+]
+
+# Other checks to run by default in "extended"/heavy mode
+HEARTBEAT_EXTENDED_CHECKS = (
+    'openedx.core.djangoapps.heartbeat.default_checks.check_celery',
+)
+
+HEARTBEAT_CELERY_TIMEOUT = 5
+
 ################################# CELERY ######################################
 
 # Auto discover tasks fails to detect contentstore tasks
@@ -1028,7 +1442,6 @@ CELERY_DEFAULT_ROUTING_KEY = DEFAULT_PRIORITY_QUEUE
 CELERY_QUEUES = [
     'edx.cms.core.default',
     'edx.cms.core.high',
-    'edx.cms.core.high_mem'
 ]
 
 CELERY_BROKER_TRANSPORT = 'amqp'
@@ -1059,6 +1472,8 @@ YOUTUBE = {
 
     'IMAGE_API': 'http://img.youtube.com/vi/{youtube_id}/0.jpg',  # /maxresdefault.jpg for 1920*1080
 }
+
+YOUTUBE_API_KEY = 'PUT_YOUR_API_KEY_HERE'
 
 ############################# VIDEO UPLOAD PIPELINE #############################
 
@@ -1282,6 +1697,10 @@ MKTG_URL_LINK_MAP = {
 
 SUPPORT_SITE_LINK = ''
 ID_VERIFICATION_SUPPORT_LINK = ''
+PASSWORD_RESET_SUPPORT_LINK = ''
+ACTIVATION_EMAIL_SUPPORT_LINK = ''
+
+DISABLE_ACCOUNT_ACTIVATION_REQUIREMENT_SWITCH = "verify_student_disable_account_activation_requirement"
 
 ############################## EVENT TRACKING #################################
 
@@ -1362,6 +1781,10 @@ AUTH_PASSWORD_VALIDATORS = [
         }
     },
 ]
+
+PASSWORD_POLICY_COMPLIANCE_ROLLOUT_CONFIG = {
+    'ENFORCE_COMPLIANCE_ON_LOGIN': False
+}
 
 ##### ACCOUNT LOCKOUT DEFAULT PARAMETERS #####
 MAX_FAILED_LOGIN_ATTEMPTS_ALLOWED = 5
@@ -1463,6 +1886,46 @@ ADVANCED_PROBLEM_TYPES = [
     }
 ]
 
+############### Settings for Retirement #####################
+RETIRED_USERNAME_PREFIX = 'retired__user_'
+RETIRED_EMAIL_PREFIX = 'retired__user_'
+RETIRED_EMAIL_DOMAIN = 'retired.invalid'
+RETIRED_USERNAME_FMT = lambda settings: settings.RETIRED_USERNAME_PREFIX + '{}'
+RETIRED_EMAIL_FMT = lambda settings: settings.RETIRED_EMAIL_PREFIX + '{}@' + settings.RETIRED_EMAIL_DOMAIN
+derived('RETIRED_USERNAME_FMT', 'RETIRED_EMAIL_FMT')
+RETIRED_USER_SALTS = ['abc', '123']
+RETIREMENT_SERVICE_WORKER_USERNAME = 'RETIREMENT_SERVICE_USER'
+
+# These states are the default, but are designed to be overridden in configuration.
+RETIREMENT_STATES = [
+    'PENDING',
+
+    'LOCKING_ACCOUNT',
+    'LOCKING_COMPLETE',
+
+    # Use these states only when ENABLE_DISCUSSION_SERVICE is True.
+    'RETIRING_FORUMS',
+    'FORUMS_COMPLETE',
+
+    # TODO - Change these states to be the LMS-only email opt-out - PLAT-2189
+    'RETIRING_EMAIL_LISTS',
+    'EMAIL_LISTS_COMPLETE',
+
+    'RETIRING_ENROLLMENTS',
+    'ENROLLMENTS_COMPLETE',
+
+    # Use these states only when ENABLE_STUDENT_NOTES is True.
+    'RETIRING_NOTES',
+    'NOTES_COMPLETE',
+
+    'RETIRING_LMS',
+    'LMS_COMPLETE',
+
+    'ERRORED',
+    'ABORTED',
+    'COMPLETE',
+]
+
 USERNAME_REPLACEMENT_WORKER = "REPLACE WITH VALID USERNAME"
 
 # Files and Uploads type filter values
@@ -1533,6 +1996,24 @@ CREDIT_TASK_MAX_RETRIES = 5
 # or denied for credit.
 CREDIT_PROVIDER_TIMESTAMP_EXPIRATION = 15 * 60
 
+CREDIT_PROVIDER_SECRET_KEYS = {}
+
+# See https://github.com/edx/edx-django-sites-extensions for more info
+# Default site to use if site matching request headers does not exist
+SITE_ID = 1
+
+# dir containing all themes
+COMPREHENSIVE_THEME_DIRS = []
+
+# Theme directory locale paths
+COMPREHENSIVE_THEME_LOCALE_PATHS = []
+
+# Theme to use when no site or site theme is defined,
+# set to None if you want to use openedx theme
+DEFAULT_SITE_THEME = None
+
+ENABLE_COMPREHENSIVE_THEMING = False
+
 ################################ Settings for Microsites ################################
 
 ### Select an implementation for the microsite backend
@@ -1554,6 +2035,57 @@ DATABASE_ROUTERS = [
     'openedx.core.lib.django_courseware_routers.StudentModuleHistoryExtendedRouter',
 ]
 
+############################ Cache Configuration ###############################
+
+CACHES = {
+    'course_structure_cache': {
+        'KEY_PREFIX': 'course_structure',
+        'KEY_FUNCTION': 'util.memcache.safe_key',
+        'LOCATION': ['localhost:11211'],
+        'TIMEOUT': '7200',
+        'BACKEND': 'django.core.cache.backends.memcached.MemcachedCache',
+    },
+    'celery': {
+        'KEY_PREFIX': 'celery',
+        'KEY_FUNCTION': 'util.memcache.safe_key',
+        'LOCATION': ['localhost:11211'],
+        'TIMEOUT': '7200',
+        'BACKEND': 'django.core.cache.backends.memcached.MemcachedCache',
+    },
+    'mongo_metadata_inheritance': {
+        'KEY_PREFIX': 'mongo_metadata_inheritance',
+        'KEY_FUNCTION': 'util.memcache.safe_key',
+        'LOCATION': ['localhost:11211'],
+        'TIMEOUT': 300,
+        'BACKEND': 'django.core.cache.backends.memcached.MemcachedCache',
+    },
+    'staticfiles': {
+        'KEY_FUNCTION': 'util.memcache.safe_key',
+        'LOCATION': ['localhost:11211'],
+        'KEY_PREFIX': 'staticfiles_general',
+        'BACKEND': 'django.core.cache.backends.memcached.MemcachedCache',
+    },
+    'default': {
+        'VERSION': '1',
+        'KEY_FUNCTION': 'util.memcache.safe_key',
+        'LOCATION': ['localhost:11211'],
+        'KEY_PREFIX': 'default',
+        'BACKEND': 'django.core.cache.backends.memcached.MemcachedCache',
+    },
+    'configuration': {
+        'KEY_FUNCTION': 'util.memcache.safe_key',
+        'LOCATION': ['localhost:11211'],
+        'KEY_PREFIX': 'configuration',
+        'BACKEND': 'django.core.cache.backends.memcached.MemcachedCache',
+    },
+    'general': {
+        'KEY_FUNCTION': 'util.memcache.safe_key',
+        'LOCATION': ['localhost:11211'],
+        'KEY_PREFIX': 'general',
+        'BACKEND': 'django.core.cache.backends.memcached.MemcachedCache',
+    },
+}
+
 ############################ OAUTH2 Provider ###################################
 
 # OpenID Connect issuer ID. Normally the URL of the authentication endpoint.
@@ -1561,6 +2093,10 @@ OAUTH_OIDC_ISSUER = 'http://127.0.0.1:8000/oauth2'
 
 # 5 minute expiration time for JWT id tokens issued for external API requests.
 OAUTH_ID_TOKEN_EXPIRATION = 5 * 60
+
+# This is required for the migrations in oauth_dispatch.models
+# otherwise it fails saying this attribute is not present in Settings
+OAUTH2_PROVIDER_APPLICATION_MODEL = 'oauth2_provider.Application'
 
 # Partner support link for CMS footer
 PARTNER_SUPPORT_EMAIL = ''
@@ -1573,6 +2109,10 @@ AFFILIATE_COOKIE_NAME = 'affiliate_id'
 HELP_TOKENS_INI_FILE = REPO_ROOT / "cms" / "envs" / "help_tokens.ini"
 HELP_TOKENS_LANGUAGE_CODE = lambda settings: settings.LANGUAGE_CODE
 HELP_TOKENS_VERSION = lambda settings: doc_version()
+HELP_TOKENS_BOOKS = {
+    'learner': 'https://edx.readthedocs.io/projects/open-edx-learner-guide',
+    'course_author': 'https://edx.readthedocs.io/projects/open-edx-building-and-running-a-course',
+}
 derived('HELP_TOKENS_LANGUAGE_CODE', 'HELP_TOKENS_VERSION')
 
 # Used with Email sending
@@ -1584,6 +2124,13 @@ RETRY_ACTIVATION_EMAIL_TIMEOUT = 0.5
 # How long until database records about the outcome of a task and its artifacts get deleted?
 USER_TASKS_MAX_AGE = timedelta(days=7)
 
+########################## DJANGO DEBUG TOOLBAR ###############################
+# We don't enable Django Debug Toolbar universally, but whenever we do, we want
+# to avoid patching settings.  Patched settings can cause circular import
+# problems: https://django-debug-toolbar.readthedocs.org/en/1.0/installation.html#explicit-setup
+
+DEBUG_TOOLBAR_PATCH_SETTINGS = False
+
 ############## Settings for the Enterprise App ######################
 
 ENTERPRISE_ENROLLMENT_API_URL = LMS_ROOT_URL + LMS_ENROLLMENT_API_PATH
@@ -1593,6 +2140,7 @@ ENTERPRISE_API_CACHE_TIMEOUT = 3600  # Value is in seconds
 ENTERPRISE_REPORTING_SECRET = '0000000000000000'
 ENTERPRISE_CUSTOMER_CATALOG_DEFAULT_CONTENT_FILTER = {}
 
+BASE_COOKIE_DOMAIN = 'localhost'
 ############## Settings for the Discovery App ######################
 
 COURSE_CATALOG_API_URL = 'http://localhost:8008/api/v1'
@@ -1607,6 +2155,11 @@ COURSE_ABOUT_VISIBILITY_PERMISSION = 'see_exists'
 
 DEFAULT_COURSE_VISIBILITY_IN_CATALOG = "both"
 DEFAULT_MOBILE_AVAILABLE = False
+
+################# Mobile URLS ##########################
+
+# These are URLs to the app store for mobile.
+MOBILE_STORE_URLS = {}
 
 ############################# Persistent Grades ####################################
 
@@ -1679,7 +2232,7 @@ COURSE_EXPORT_DOWNLOAD_CHUNK_SIZE = 8192
 # E-Commerce API Configuration
 ECOMMERCE_PUBLIC_URL_ROOT = 'http://localhost:8002'
 ECOMMERCE_API_URL = 'http://localhost:8002/api/v2'
-COMMERCE_API_SIGNING_KEY = 'SET-ME-PLEASE'
+ECOMMERCE_API_SIGNING_KEY = 'SET-ME-PLEASE'
 
 CREDENTIALS_INTERNAL_SERVICE_URL = 'http://localhost:8005'
 CREDENTIALS_PUBLIC_SERVICE_URL = None
@@ -1715,6 +2268,38 @@ VIDEO_UPLOAD_PIPELINE = {
 }
 
 DEPRECATED_ADVANCED_COMPONENT_TYPES = []
+
+########################## VIDEO IMAGE STORAGE ############################
+
+VIDEO_IMAGE_SETTINGS = dict(
+    VIDEO_IMAGE_MAX_BYTES=2 * 1024 * 1024,    # 2 MB
+    VIDEO_IMAGE_MIN_BYTES=2 * 1024,       # 2 KB
+    # Backend storage
+    # STORAGE_CLASS='storages.backends.s3boto.S3BotoStorage',
+    # STORAGE_KWARGS=dict(bucket='video-image-bucket'),
+    STORAGE_KWARGS=dict(
+        location=MEDIA_ROOT,
+        base_url=MEDIA_URL,
+    ),
+    DIRECTORY_PREFIX='video-images/',
+)
+
+VIDEO_IMAGE_MAX_AGE = 31536000
+
+########################## VIDEO TRANSCRIPTS STORAGE ############################
+VIDEO_TRANSCRIPTS_SETTINGS = dict(
+    VIDEO_TRANSCRIPTS_MAX_BYTES=3 * 1024 * 1024,    # 3 MB
+    # Backend storage
+    # STORAGE_CLASS='storages.backends.s3boto.S3BotoStorage',
+    # STORAGE_KWARGS=dict(bucket='video-transcripts-bucket'),
+    STORAGE_KWARGS=dict(
+        location=MEDIA_ROOT,
+        base_url=MEDIA_URL,
+    ),
+    DIRECTORY_PREFIX='video-transcripts/',
+)
+
+VIDEO_TRANSCRIPTS_MAX_AGE = 31536000
 
 ##### shoppingcart Payment #####
 PAYMENT_SUPPORT_EMAIL = 'billing@example.com'
