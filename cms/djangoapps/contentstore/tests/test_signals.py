@@ -27,7 +27,7 @@ class LockedTest(ModuleStoreTestCase):
     @patch('cms.djangoapps.contentstore.signals.handlers.cache.delete')
     @patch('cms.djangoapps.contentstore.signals.handlers.task_compute_all_grades_for_course.apply_async')
     @ddt.data(True, False)
-    def test_locked(self, lock_available, compute_grades_async_mock, delete_mock, add_mock):
+    def test_locked(self, lock_available, compute_grades_async_mock, add_mock):
         add_mock.return_value = lock_available
         sender = Mock()
 
