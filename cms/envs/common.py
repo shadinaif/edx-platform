@@ -48,9 +48,61 @@ from datetime import timedelta
 import lms.envs.common
 # Although this module itself may not use these imported variables, other dependent modules may.
 from lms.envs.common import (
-    update_module_store_settings,
+    USE_TZ, ALL_LANGUAGES, WIKI_ENABLED, update_module_store_settings, ASSET_IGNORE_REGEX,
+    PARENTAL_CONSENT_AGE_LIMIT, REGISTRATION_EMAIL_PATTERNS_ALLOWED,
+    # The following PROFILE_IMAGE_* settings are included as they are
+    # indirectly accessed through the email opt-in API, which is
+    # technically accessible through the CMS via legacy URLs.
+    PROFILE_IMAGE_BACKEND, PROFILE_IMAGE_DEFAULT_FILENAME, PROFILE_IMAGE_DEFAULT_FILE_EXTENSION,
+    PROFILE_IMAGE_SECRET_KEY, PROFILE_IMAGE_MIN_BYTES, PROFILE_IMAGE_MAX_BYTES, PROFILE_IMAGE_SIZES_MAP,
+    # The following setting is included as it is used to check whether to
+    # display credit eligibility table on the CMS or not.
+    COURSE_MODE_DEFAULTS, DEFAULT_COURSE_ABOUT_IMAGE_URL,
+
+    # User-uploaded content
+    MEDIA_ROOT,
+    MEDIA_URL,
+
     # Lazy Gettext
     _,
+
+    # Django REST framework configuration
+    REST_FRAMEWORK,
+
+    STATICI18N_OUTPUT_DIR,
+
+    # Heartbeat
+    HEARTBEAT_CHECKS,
+    HEARTBEAT_EXTENDED_CHECKS,
+    HEARTBEAT_CELERY_TIMEOUT,
+
+    # Default site to use if no site exists matching request headers
+    SITE_ID,
+
+    # constants for redirects app
+    REDIRECT_CACHE_TIMEOUT,
+    REDIRECT_CACHE_KEY_PREFIX,
+
+    # This is required for the migrations in oauth_dispatch.models
+    # otherwise it fails saying this attribute is not present in Settings
+    # Although Studio does not enable OAuth2 Provider capability, the new approach
+    # to generating test databases will discover and try to create all tables
+    # and this setting needs to be present
+    OAUTH2_PROVIDER_APPLICATION_MODEL,
+    JWT_AUTH,
+
+    USERNAME_REGEX_PARTIAL,
+    USERNAME_PATTERN,
+
+    # django-debug-toolbar
+    DEBUG_TOOLBAR_PATCH_SETTINGS,
+
+    COURSE_ENROLLMENT_MODES,
+    CONTENT_TYPE_GATE_GROUP_IDS,
+
+    DISABLE_ACCOUNT_ACTIVATION_REQUIREMENT_SWITCH,
+
+    GENERATE_PROFILE_SCORES,
 
     # Methods to derive settings
     _make_mako_template_dirs,
@@ -103,7 +155,6 @@ PLATFORM_TWITTER_ACCOUNT = "@YourPlatformTwitterAccount"
 # Dummy secret key for dev/test
 SECRET_KEY = 'dev key'
 FAVICON_PATH = 'images/favicon.ico'
-DEFAULT_COURSE_ABOUT_IMAGE_URL = 'images/pencils.jpg'
 STUDIO_NAME = _("Your Platform Studio")
 STUDIO_SHORT_NAME = _("Studio")
 FEATURES = {
@@ -265,20 +316,6 @@ ENABLE_JASMINE = False
 # IDA for which the social auth flow uses DOT (Django OAuth Toolkit).
 IDA_LOGOUT_URI_LIST = []
 
-# Ignore static asset files on import which match this pattern
-ASSET_IGNORE_REGEX = r"(^\._.*$)|(^\.DS_Store$)|(^.*~$)"
-
-# The space is required for space-dependent languages like Arabic and Farsi.
-# However, backward compatibility with Ficus older releases is still maintained (space is still not valid)
-# in the AccountCreationForm and the user_api through the ENABLE_UNICODE_USERNAME feature flag.
-USERNAME_REGEX_PARTIAL = r'[\w .@_+-]+'
-USERNAME_PATTERN = r'(?P<username>{regex})'.format(regex=USERNAME_REGEX_PARTIAL)
-
-###################### Registration ##################################
-# Optional setting to restrict registration / account creation to only emails
-# that match a regex in this list. Set to None to allow any email (default).
-REGISTRATION_EMAIL_PATTERNS_ALLOWED = None
-
 ############################# SOCIAL MEDIA SHARING #############################
 SOCIAL_SHARING_SETTINGS = {
     # Note: Ensure 'CUSTOM_COURSE_URLS' has a matching value in lms/envs/common.py
@@ -311,10 +348,6 @@ sys.path.append(COMMON_ROOT / 'djangoapps')
 GEOIP_PATH = REPO_ROOT / "common/static/data/geoip/GeoLite2-Country.mmdb"
 
 DATA_DIR = COURSES_ROOT
-
-# User-uploaded content
-MEDIA_ROOT = '/edx/var/edxapp/media/'
-MEDIA_URL = '/media/'
 
 ######################## BRANCH.IO ###########################
 BRANCH_IO_KEY = ''
@@ -398,199 +431,6 @@ derived_collection_entry('TEMPLATES', 0, 'DIRS')
 derived_collection_entry('TEMPLATES', 1, 'DIRS')
 DEFAULT_TEMPLATE_ENGINE = TEMPLATES[0]
 
-# Source:
-# http://loc.gov/standards/iso639-2/ISO-639-2_utf-8.txt according to http://en.wikipedia.org/wiki/ISO_639-1
-# Note that this is used as the set of choices to the `code` field of the
-# `LanguageProficiency` model.
-ALL_LANGUAGES = [
-    [u"aa", u"Afar"],
-    [u"ab", u"Abkhazian"],
-    [u"af", u"Afrikaans"],
-    [u"ak", u"Akan"],
-    [u"sq", u"Albanian"],
-    [u"am", u"Amharic"],
-    [u"ar", u"Arabic"],
-    [u"an", u"Aragonese"],
-    [u"hy", u"Armenian"],
-    [u"as", u"Assamese"],
-    [u"av", u"Avaric"],
-    [u"ae", u"Avestan"],
-    [u"ay", u"Aymara"],
-    [u"az", u"Azerbaijani"],
-    [u"ba", u"Bashkir"],
-    [u"bm", u"Bambara"],
-    [u"eu", u"Basque"],
-    [u"be", u"Belarusian"],
-    [u"bn", u"Bengali"],
-    [u"bh", u"Bihari languages"],
-    [u"bi", u"Bislama"],
-    [u"bs", u"Bosnian"],
-    [u"br", u"Breton"],
-    [u"bg", u"Bulgarian"],
-    [u"my", u"Burmese"],
-    [u"ca", u"Catalan"],
-    [u"ch", u"Chamorro"],
-    [u"ce", u"Chechen"],
-    [u"zh", u"Chinese"],
-    [u"zh_HANS", u"Simplified Chinese"],
-    [u"zh_HANT", u"Traditional Chinese"],
-    [u"cu", u"Church Slavic"],
-    [u"cv", u"Chuvash"],
-    [u"kw", u"Cornish"],
-    [u"co", u"Corsican"],
-    [u"cr", u"Cree"],
-    [u"cs", u"Czech"],
-    [u"da", u"Danish"],
-    [u"dv", u"Divehi"],
-    [u"nl", u"Dutch"],
-    [u"dz", u"Dzongkha"],
-    [u"en", u"English"],
-    [u"eo", u"Esperanto"],
-    [u"et", u"Estonian"],
-    [u"ee", u"Ewe"],
-    [u"fo", u"Faroese"],
-    [u"fj", u"Fijian"],
-    [u"fi", u"Finnish"],
-    [u"fr", u"French"],
-    [u"fy", u"Western Frisian"],
-    [u"ff", u"Fulah"],
-    [u"ka", u"Georgian"],
-    [u"de", u"German"],
-    [u"gd", u"Gaelic"],
-    [u"ga", u"Irish"],
-    [u"gl", u"Galician"],
-    [u"gv", u"Manx"],
-    [u"el", u"Greek"],
-    [u"gn", u"Guarani"],
-    [u"gu", u"Gujarati"],
-    [u"ht", u"Haitian"],
-    [u"ha", u"Hausa"],
-    [u"he", u"Hebrew"],
-    [u"hz", u"Herero"],
-    [u"hi", u"Hindi"],
-    [u"ho", u"Hiri Motu"],
-    [u"hr", u"Croatian"],
-    [u"hu", u"Hungarian"],
-    [u"ig", u"Igbo"],
-    [u"is", u"Icelandic"],
-    [u"io", u"Ido"],
-    [u"ii", u"Sichuan Yi"],
-    [u"iu", u"Inuktitut"],
-    [u"ie", u"Interlingue"],
-    [u"ia", u"Interlingua"],
-    [u"id", u"Indonesian"],
-    [u"ik", u"Inupiaq"],
-    [u"it", u"Italian"],
-    [u"jv", u"Javanese"],
-    [u"ja", u"Japanese"],
-    [u"kl", u"Kalaallisut"],
-    [u"kn", u"Kannada"],
-    [u"ks", u"Kashmiri"],
-    [u"kr", u"Kanuri"],
-    [u"kk", u"Kazakh"],
-    [u"km", u"Central Khmer"],
-    [u"ki", u"Kikuyu"],
-    [u"rw", u"Kinyarwanda"],
-    [u"ky", u"Kirghiz"],
-    [u"kv", u"Komi"],
-    [u"kg", u"Kongo"],
-    [u"ko", u"Korean"],
-    [u"kj", u"Kuanyama"],
-    [u"ku", u"Kurdish"],
-    [u"lo", u"Lao"],
-    [u"la", u"Latin"],
-    [u"lv", u"Latvian"],
-    [u"li", u"Limburgan"],
-    [u"ln", u"Lingala"],
-    [u"lt", u"Lithuanian"],
-    [u"lb", u"Luxembourgish"],
-    [u"lu", u"Luba-Katanga"],
-    [u"lg", u"Ganda"],
-    [u"mk", u"Macedonian"],
-    [u"mh", u"Marshallese"],
-    [u"ml", u"Malayalam"],
-    [u"mi", u"Maori"],
-    [u"mr", u"Marathi"],
-    [u"ms", u"Malay"],
-    [u"mg", u"Malagasy"],
-    [u"mt", u"Maltese"],
-    [u"mn", u"Mongolian"],
-    [u"na", u"Nauru"],
-    [u"nv", u"Navajo"],
-    [u"nr", u"Ndebele, South"],
-    [u"nd", u"Ndebele, North"],
-    [u"ng", u"Ndonga"],
-    [u"ne", u"Nepali"],
-    [u"nn", u"Norwegian Nynorsk"],
-    [u"nb", u"Bokmål, Norwegian"],
-    [u"no", u"Norwegian"],
-    [u"ny", u"Chichewa"],
-    [u"oc", u"Occitan"],
-    [u"oj", u"Ojibwa"],
-    [u"or", u"Oriya"],
-    [u"om", u"Oromo"],
-    [u"os", u"Ossetian"],
-    [u"pa", u"Panjabi"],
-    [u"fa", u"Persian"],
-    [u"pi", u"Pali"],
-    [u"pl", u"Polish"],
-    [u"pt", u"Portuguese"],
-    [u"ps", u"Pushto"],
-    [u"qu", u"Quechua"],
-    [u"rm", u"Romansh"],
-    [u"ro", u"Romanian"],
-    [u"rn", u"Rundi"],
-    [u"ru", u"Russian"],
-    [u"sg", u"Sango"],
-    [u"sa", u"Sanskrit"],
-    [u"si", u"Sinhala"],
-    [u"sk", u"Slovak"],
-    [u"sl", u"Slovenian"],
-    [u"se", u"Northern Sami"],
-    [u"sm", u"Samoan"],
-    [u"sn", u"Shona"],
-    [u"sd", u"Sindhi"],
-    [u"so", u"Somali"],
-    [u"st", u"Sotho, Southern"],
-    [u"es", u"Spanish"],
-    [u"sc", u"Sardinian"],
-    [u"sr", u"Serbian"],
-    [u"ss", u"Swati"],
-    [u"su", u"Sundanese"],
-    [u"sw", u"Swahili"],
-    [u"sv", u"Swedish"],
-    [u"ty", u"Tahitian"],
-    [u"ta", u"Tamil"],
-    [u"tt", u"Tatar"],
-    [u"te", u"Telugu"],
-    [u"tg", u"Tajik"],
-    [u"tl", u"Tagalog"],
-    [u"th", u"Thai"],
-    [u"bo", u"Tibetan"],
-    [u"ti", u"Tigrinya"],
-    [u"to", u"Tonga (Tonga Islands)"],
-    [u"tn", u"Tswana"],
-    [u"ts", u"Tsonga"],
-    [u"tk", u"Turkmen"],
-    [u"tr", u"Turkish"],
-    [u"tw", u"Twi"],
-    [u"ug", u"Uighur"],
-    [u"uk", u"Ukrainian"],
-    [u"ur", u"Urdu"],
-    [u"uz", u"Uzbek"],
-    [u"ve", u"Venda"],
-    [u"vi", u"Vietnamese"],
-    [u"vo", u"Volapük"],
-    [u"cy", u"Welsh"],
-    [u"wa", u"Walloon"],
-    [u"wo", u"Wolof"],
-    [u"xh", u"Xhosa"],
-    [u"yi", u"Yiddish"],
-    [u"yo", u"Yoruba"],
-    [u"za", u"Zhuang"],
-    [u"zu", u"Zulu"]
-]
-
 #################################### AWS #######################################
 # S3BotoStorage insists on a timeout for uploaded assets. We should make it
 # permanent instead, but rather than trying to figure out exactly where that
@@ -599,42 +439,6 @@ ALL_LANGUAGES = [
 # in the global settings.py
 AWS_SES_REGION_NAME = 'us-east-1'
 AWS_SES_REGION_ENDPOINT = 'email.us-east-1.amazonaws.com'
-
-########################## Parental controls config  #######################
-
-# The age at which a learner no longer requires parental consent, or None
-# if parental consent is never required.
-PARENTAL_CONSENT_AGE_LIMIT = 13
-
-# PROFILE IMAGE CONFIG
-# WARNING: Certain django storage backends do not support atomic
-# file overwrites (including the default, OverwriteStorage) - instead
-# there are separate calls to delete and then write a new file in the
-# storage backend.  This introduces the risk of a race condition
-# occurring when a user uploads a new profile image to replace an
-# earlier one (the file will temporarily be deleted).
-PROFILE_IMAGE_BACKEND = {
-    'class': 'storages.backends.overwrite.OverwriteStorage',
-    'options': {
-        'location': os.path.join(MEDIA_ROOT, 'profile-images/'),
-        'base_url': os.path.join(MEDIA_URL, 'profile-images/'),
-    },
-}
-PROFILE_IMAGE_DEFAULT_FILENAME = 'images/profiles/default'
-PROFILE_IMAGE_DEFAULT_FILE_EXTENSION = 'png'
-# This secret key is used in generating unguessable URLs to users'
-# profile images.  Once it has been set, changing it will make the
-# platform unaware of current image URLs, resulting in reverting all
-# users' profile images to the default placeholder image.
-PROFILE_IMAGE_SECRET_KEY = 'placeholder secret key'
-PROFILE_IMAGE_MAX_BYTES = 1024 * 1024
-PROFILE_IMAGE_MIN_BYTES = 100
-PROFILE_IMAGE_SIZES_MAP = {
-    'full': 500,
-    'large': 120,
-    'medium': 50,
-    'small': 30
-}
 
 ##############################################################################
 
@@ -682,18 +486,6 @@ CERT_QUEUE = 'certificates'
 # Studio. Only applies to IDA for which the social auth flow uses DOT (Django OAuth Toolkit).
 IDA_LOGOUT_URI_LIST = []
 
-COURSE_MODE_DEFAULTS = {
-    'bulk_sku': None,
-    'currency': 'usd',
-    'description': None,
-    'expiration_datetime': None,
-    'min_price': 0,
-    'name': _('Audit'),
-    'sku': None,
-    'slug': 'audit',
-    'suggested_prices': '',
-}
-
 ELASTIC_SEARCH_CONFIG = [
     {
         'use_ssl': False,
@@ -718,25 +510,6 @@ CSRF_COOKIE_SECURE = False
 
 CROSS_DOMAIN_CSRF_COOKIE_DOMAIN = ''
 CROSS_DOMAIN_CSRF_COOKIE_NAME = ''
-
-######################### Django Rest Framework ########################
-
-REST_FRAMEWORK = {
-    'DEFAULT_PAGINATION_CLASS': 'edx_rest_framework_extensions.paginators.DefaultPagination',
-    'DEFAULT_RENDERER_CLASSES': (
-        'rest_framework.renderers.JSONRenderer',
-    ),
-    'PAGE_SIZE': 10,
-    'URL_FORMAT_OVERRIDE': None,
-    'DEFAULT_THROTTLE_RATES': {
-        'user': '60/minute',
-        'service_user': '120/minute',
-        'registration_validation': '30/minute',
-    },
-}
-
-# If this is true, random scores will be generated for the purpose of debugging the profile graphs
-GENERATE_PROFILE_SCORES = False
 
 #################### CAPA External Code Evaluation #############################
 XQUEUE_INTERFACE = {
@@ -865,68 +638,6 @@ ORA2_FILE_PREFIX = None
 # Default File Upload Storage bucket and prefix. Used by the FileUpload Service.
 FILE_UPLOAD_STORAGE_BUCKET_NAME = 'SET-ME-PLEASE (ex. bucket-name)'
 FILE_UPLOAD_STORAGE_PREFIX = 'submissions_attachments'
-
-############## Settings for Course Enrollment Modes ######################
-# The min_price key refers to the minimum price allowed for an instance
-# of a particular type of course enrollment mode. This is not to be confused
-# with the min_price field of the CourseMode model, which refers to the actual
-# price of the CourseMode.
-COURSE_ENROLLMENT_MODES = {
-    "audit": {
-        "id": 1,
-        "slug": "audit",
-        "display_name": _("Audit"),
-        "min_price": 0,
-    },
-    "verified": {
-        "id": 2,
-        "slug": "verified",
-        "display_name": _("Verified"),
-        "min_price": 1,
-    },
-    "professional": {
-        "id": 3,
-        "slug": "professional",
-        "display_name": _("Professional"),
-        "min_price": 1,
-    },
-    "no-id-professional": {
-        "id": 4,
-        "slug": "no-id-professional",
-        "display_name": _("No-Id-Professional"),
-        "min_price": 0,
-    },
-    "credit": {
-        "id": 5,
-        "slug": "credit",
-        "display_name": _("Credit"),
-        "min_price": 0,
-    },
-    "honor": {
-        "id": 6,
-        "slug": "honor",
-        "display_name": _("Honor"),
-        "min_price": 0,
-    },
-    "masters": {
-        "id": 7,
-        "slug": "masters",
-        "display_name": _("Master's"),
-        "min_price": 0,
-    },
-}
-
-CONTENT_TYPE_GATE_GROUP_IDS = {
-    'limited_access': 1,
-    'full_access': 2,
-}
-
-############## Settings for RedirectMiddleware ###############
-
-# Setting this to None causes Redirect data to never expire
-# The cache is cleared when Redirect models are saved/deleted
-REDIRECT_CACHE_TIMEOUT = None  # The length of time we cache Redirect model data
-REDIRECT_CACHE_KEY_PREFIX = 'redirects'
 
 ############################ Modulestore Configuration ################################
 
@@ -1063,40 +774,8 @@ CODE_JAIL = {
 
 COURSES_WITH_UNSAFE_CODE = []
 
-################################ Settings for JWTs ################################
-
-JWT_AUTH = {
-    'JWT_VERIFY_EXPIRATION': True,
-
-    'JWT_PAYLOAD_GET_USERNAME_HANDLER': lambda d: d.get('username'),
-    'JWT_LEEWAY': 1,
-    'JWT_DECODE_HANDLER': 'edx_rest_framework_extensions.auth.jwt.decoder.jwt_decode_handler',
-
-    'JWT_AUTH_COOKIE': 'edx-jwt-cookie',
-
-    # Number of seconds before JWTs expire
-    'JWT_EXPIRATION': 30,
-    'JWT_IN_COOKIE_EXPIRATION': 60 * 60,
-
-    'JWT_LOGIN_CLIENT_ID': 'login-service-client-id',
-    'JWT_LOGIN_SERVICE_USERNAME': 'login_service_user',
-
-    'JWT_SUPPORTED_VERSION': '1.2.0',
-
-    'JWT_ALGORITHM': 'HS256',
-    'JWT_SECRET_KEY': SECRET_KEY,
-
-    'JWT_SIGNING_ALGORITHM': 'RS512',
-    'JWT_PRIVATE_SIGNING_JWK': None,
-    'JWT_PUBLIC_SIGNING_JWK_SET': None,
-
-    'JWT_ISSUER': 'change-me',
-    'JWT_AUDIENCE': 'change-me',
-}
-
 ############################ DJANGO_BUILTINS ################################
 # Change DEBUG in your environment settings files, not here
-USE_TZ = True
 DEBUG = False
 SESSION_COOKIE_SECURE = False
 SESSION_SAVE_EVERY_REQUEST = False
@@ -1173,7 +852,6 @@ USE_I18N = True
 USE_L10N = True
 
 STATICI18N_ROOT = PROJECT_ROOT / "static"
-STATICI18N_OUTPUT_DIR = "js/i18n"
 
 LOCALE_PATHS = _make_locale_paths
 derived('LOCALE_PATHS')
@@ -1382,21 +1060,6 @@ WEBPACK_LOADER = {
     }
 }
 WEBPACK_CONFIG_PATH = 'webpack.prod.config.js'
-
-############################## HEARTBEAT ######################################
-
-# Checks run in normal mode by the heartbeat djangoapp
-HEARTBEAT_CHECKS = [
-    'openedx.core.djangoapps.heartbeat.default_checks.check_modulestore',
-    'openedx.core.djangoapps.heartbeat.default_checks.check_database',
-]
-
-# Other checks to run by default in "extended"/heavy mode
-HEARTBEAT_EXTENDED_CHECKS = (
-    'openedx.core.djangoapps.heartbeat.default_checks.check_celery',
-)
-
-HEARTBEAT_CELERY_TIMEOUT = 5
 
 ################################# CELERY ######################################
 
@@ -1700,8 +1363,6 @@ ID_VERIFICATION_SUPPORT_LINK = ''
 PASSWORD_RESET_SUPPORT_LINK = ''
 ACTIVATION_EMAIL_SUPPORT_LINK = ''
 
-DISABLE_ACCOUNT_ACTIVATION_REQUIREMENT_SWITCH = "verify_student_disable_account_activation_requirement"
-
 ############################## EVENT TRACKING #################################
 
 TRACK_MAX_EVENT = 50000
@@ -1998,10 +1659,6 @@ CREDIT_PROVIDER_TIMESTAMP_EXPIRATION = 15 * 60
 
 CREDIT_PROVIDER_SECRET_KEYS = {}
 
-# See https://github.com/edx/edx-django-sites-extensions for more info
-# Default site to use if site matching request headers does not exist
-SITE_ID = 1
-
 # dir containing all themes
 COMPREHENSIVE_THEME_DIRS = []
 
@@ -2094,10 +1751,6 @@ OAUTH_OIDC_ISSUER = 'http://127.0.0.1:8000/oauth2'
 # 5 minute expiration time for JWT id tokens issued for external API requests.
 OAUTH_ID_TOKEN_EXPIRATION = 5 * 60
 
-# This is required for the migrations in oauth_dispatch.models
-# otherwise it fails saying this attribute is not present in Settings
-OAUTH2_PROVIDER_APPLICATION_MODEL = 'oauth2_provider.Application'
-
 # Partner support link for CMS footer
 PARTNER_SUPPORT_EMAIL = ''
 
@@ -2123,13 +1776,6 @@ RETRY_ACTIVATION_EMAIL_TIMEOUT = 0.5
 
 # How long until database records about the outcome of a task and its artifacts get deleted?
 USER_TASKS_MAX_AGE = timedelta(days=7)
-
-########################## DJANGO DEBUG TOOLBAR ###############################
-# We don't enable Django Debug Toolbar universally, but whenever we do, we want
-# to avoid patching settings.  Patched settings can cause circular import
-# problems: https://django-debug-toolbar.readthedocs.org/en/1.0/installation.html#explicit-setup
-
-DEBUG_TOOLBAR_PATCH_SETTINGS = False
 
 ############## Settings for the Enterprise App ######################
 
