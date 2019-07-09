@@ -1,7 +1,10 @@
 """ Tests for utils. """
+from __future__ import absolute_import
+
 import collections
 from datetime import datetime, timedelta
 
+import six
 from django.test import TestCase
 from opaque_keys.edx.locator import CourseLocator
 from pytz import UTC
@@ -79,7 +82,7 @@ class ExtraPanelTabTestCase(TestCase):
         if tabs is None:
             tabs = []
         course = collections.namedtuple('MockCourse', ['tabs'])
-        if isinstance(tabs, basestring):
+        if isinstance(tabs, six.string_types):
             course.tabs = self.get_tab_type_dicts(tabs)
         else:
             course.tabs = tabs
