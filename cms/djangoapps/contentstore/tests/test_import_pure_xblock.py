@@ -33,6 +33,7 @@ class StubXBlock(XBlock):
 
 
 class XBlockImportTest(ModuleStoreTestCase):
+    """Test class to verify xblock import operations"""
 
     @XBlock.register_temp_plugin(StubXBlock)
     def test_import_public(self):

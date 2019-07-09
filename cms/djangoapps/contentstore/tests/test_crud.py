@@ -1,3 +1,5 @@
+"""Tests for CRUD Operations"""
+
 from __future__ import absolute_import
 
 from xmodule import templates

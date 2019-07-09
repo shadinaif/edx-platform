@@ -1,3 +1,5 @@
+"""Tests for verifying availability of resources for locking"""
+
 from __future__ import absolute_import
 
 import ddt
@@ -13,6 +15,8 @@ from xmodule.modulestore.tests.factories import CourseFactory
 
 @ddt.ddt
 class LockedTest(ModuleStoreTestCase):
+    """Test class to verify locking of mocked resources"""
+
     def setUp(self):
         super(LockedTest, self).setUp()
         self.course = CourseFactory.create(
@@ -24,7 +28,6 @@ class LockedTest(ModuleStoreTestCase):
         CourseEnrollment.enroll(self.user, self.course.id)
 
     @patch('cms.djangoapps.contentstore.signals.handlers.cache.add')
-    @patch('cms.djangoapps.contentstore.signals.handlers.cache.delete')
     @patch('cms.djangoapps.contentstore.signals.handlers.task_compute_all_grades_for_course.apply_async')
     @ddt.data(True, False)
     def test_locked(self, lock_available, compute_grades_async_mock, add_mock):

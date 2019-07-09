@@ -26,6 +26,8 @@ from xmodule.modulestore.tests.factories import CourseFactory
 
 
 class ContentStoreTestCase(ModuleStoreTestCase):
+    """Test class to verify user account operations"""
+
     def _login(self, email, password):
         """
         Login.  View should always return 200.  The success/fail is in the
@@ -341,6 +343,8 @@ class AuthTestCase(ContentStoreTestCase):
 
 
 class ForumTestCase(CourseTestCase):
+    """Tests class to verify course to forum operations"""
+
     def setUp(self):
         """ Creates the test course. """
         super(ForumTestCase, self).setUp()
@@ -388,6 +392,8 @@ class ForumTestCase(CourseTestCase):
 
 @ddt
 class CourseKeyVerificationTestCase(CourseTestCase):
+    """Test class to verify course decorator operations"""
+
     def setUp(self):
         """
         Create test course.
@@ -417,6 +423,7 @@ class PushNotificationConfigTestCase(TestCase):
     """
     Tests PushNotificationConfig.
     """
+
     def test_notifications_defaults(self):
         self.assertFalse(PushNotificationConfig.is_enabled())
 
