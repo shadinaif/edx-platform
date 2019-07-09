@@ -1,26 +1,26 @@
 """
 This test file will test registration, login, activation, and session activity timeouts
 """
-from __future__ import print_function
+from __future__ import absolute_import, print_function
+
 import datetime
 import time
 
 import mock
 import pytest
+from contentstore.models import PushNotificationConfig
+from contentstore.tests.test_course_settings import CourseTestCase
+from contentstore.tests.utils import AjaxEnabledTestClient, parse_json, registration, user
 from ddt import data, ddt, unpack
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.core.cache import cache
-from django.urls import reverse
 from django.test import TestCase
 from django.test.utils import override_settings
+from django.urls import reverse
 from freezegun import freeze_time
 from pytz import UTC
-from six.moves import xrange
-
-from contentstore.models import PushNotificationConfig
-from contentstore.tests.test_course_settings import CourseTestCase
-from contentstore.tests.utils import AjaxEnabledTestClient, parse_json, registration, user
+from six.moves import range
 from xmodule.modulestore.tests.django_utils import ModuleStoreTestCase
 from xmodule.modulestore.tests.factories import CourseFactory
 
@@ -183,7 +183,7 @@ class AuthTestCase(ContentStoreTestCase):
     def test_login_ratelimited(self):
         # try logging in 30 times, the default limit in the number of failed
         # login attempts in one 5 minute period before the rate gets limited
-        for i in xrange(30):
+        for i in range(30):
             resp = self._login(self.email, 'wrong_password{0}'.format(i))
             self.assertEqual(resp.status_code, 403)
         resp = self._login(self.email, 'wrong_password')
@@ -200,7 +200,7 @@ class AuthTestCase(ContentStoreTestCase):
             self.create_account(self.username, self.email, self.pw)
             self.activate_user(self.email)
 
-            for i in xrange(3):
+            for i in range(3):
                 resp = self._login(self.email, 'wrong_password{0}'.format(i))
                 self.assertEqual(resp.status_code, 403)
                 self.assertIn(
