@@ -1,5 +1,5 @@
 """
-User Api.
+User Apis.
 """
 from __future__ import absolute_import
 
@@ -27,6 +27,8 @@ from util.password_policy_validators import (
     password_validators_instruction_texts,
     password_validators_restrictions
 )
+
+from . import accounts
 
 
 def get_password_reset_form():
