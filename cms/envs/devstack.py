@@ -2,7 +2,14 @@
 Specific overrides to the base prod settings to make development easier.
 """
 
+from __future__ import absolute_import
+
+import logging
 from os.path import abspath, dirname, join
+
+#####################################################################
+from openedx.core.djangoapps.plugins import constants as plugin_constants
+from openedx.core.djangoapps.plugins import plugin_settings
 
 from .production import *  # pylint: disable=wildcard-import, unused-wildcard-import
 
@@ -19,7 +26,6 @@ HTTPS = 'off'
 
 ################################ LOGGERS ######################################
 
-import logging
 
 # Disable noisy loggers
 for pkg_name in ['track.contexts', 'track.middleware']:
@@ -179,8 +185,6 @@ IDA_LOGOUT_URI_LIST = [
     'http://localhost:18150/logout/',  # credentials
 ]
 
-#####################################################################
-from openedx.core.djangoapps.plugins import plugin_settings, constants as plugin_constants
 plugin_settings.add_plugins(__name__, plugin_constants.ProjectType.CMS, plugin_constants.SettingsType.DEVSTACK)
 
 ###############################################################################

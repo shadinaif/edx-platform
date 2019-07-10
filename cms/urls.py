@@ -1,19 +1,25 @@
+"""
+Urls of Studio.
+"""
+from __future__ import absolute_import
+
 from django.conf import settings
 from django.conf.urls import include, url
 from django.conf.urls.static import static
 from django.contrib.admin import autodiscover as django_autodiscover
 from django.utils.translation import ugettext_lazy as _
-from openedx.core.openapi import schema_view
+from ratelimitbackend import admin
 
 import contentstore.views
-from cms.djangoapps.contentstore.views.organization import OrganizationListView
 import openedx.core.djangoapps.common_views.xblock
 import openedx.core.djangoapps.debug.views
 import openedx.core.djangoapps.lang_pref.views
+from cms.djangoapps.contentstore.views.organization import OrganizationListView
 from openedx.core.djangoapps.password_policy import compliance as password_policy_compliance
 from openedx.core.djangoapps.password_policy.forms import PasswordPolicyAwareAdminAuthForm
-
-from ratelimitbackend import admin
+from openedx.core.djangoapps.plugins import constants as plugin_constants
+from openedx.core.djangoapps.plugins import plugin_urls
+from openedx.core.openapi import schema_view
 
 django_autodiscover()
 admin.site.site_header = _('Studio Administration')
@@ -271,5 +277,4 @@ if settings.FEATURES.get('ENABLE_API_DOCS'):
         url(r'^api-docs/$', schema_view.with_ui('swagger', cache_timeout=0)),
     ]
 
-from openedx.core.djangoapps.plugins import constants as plugin_constants, plugin_urls
 urlpatterns.extend(plugin_urls.get_patterns(plugin_constants.ProjectType.CMS))

@@ -3,7 +3,6 @@
 Settings for Bok Choy tests that are used when running Studio in Docker-based devstack.
 """
 
-# noinspection PyUnresolvedReferences
 from .bok_choy import *  # pylint: disable=wildcard-import
 
 CMS_BASE = '{}:{}'.format(os.environ['BOK_CHOY_HOSTNAME'], os.environ.get('BOK_CHOY_CMS_PORT', 8031))
