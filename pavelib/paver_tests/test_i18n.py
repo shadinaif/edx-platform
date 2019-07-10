@@ -2,6 +2,8 @@
 Tests for pavelib/i18n.py.
 """
 
+from __future__ import absolute_import
+
 import os
 import textwrap
 import unittest
@@ -12,7 +14,6 @@ from paver.easy import call_task, task
 import pavelib.i18n
 from pavelib.paver_tests.utils import PaverTestCase
 from pavelib.utils.envs import Env
-
 
 TX_CONFIG_SIMPLE = """\
 [main]
