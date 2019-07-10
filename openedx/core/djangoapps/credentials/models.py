@@ -9,7 +9,7 @@ from config_models.models import ConfigurationModel
 from django.conf import settings
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
-from six.moves.urllib.parse import urljoin
+from six.moves.urllib.parse import urljoin  # pylint: disable=import-error
 
 from openedx.core.djangoapps.site_configuration import helpers
 
