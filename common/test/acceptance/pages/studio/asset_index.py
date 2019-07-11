@@ -22,8 +22,8 @@ from common.test.acceptance.pages.studio.course_page import CoursePage
 
 # file path found from CourseFixture logic
 UPLOAD_SUFFIX = '/data/uploads/studio-uploads/'
-UPLOAD_FILE_DIR = Path(
-    __file__).abspath().dirname().dirname().dirname().dirname() + UPLOAD_SUFFIX  # pylint: disable=no-value-for-parameter
+# pylint: disable=no-value-for-parameter
+UPLOAD_FILE_DIR = Path(__file__).abspath().dirname().dirname().dirname().dirname() + UPLOAD_SUFFIX
 
 
 class AssetIndexPageStudioFrontend(CoursePage):
