@@ -599,26 +599,11 @@ class ProblemBlockTest(unittest.TestCase):
 
     @ddt.data(
         # Correctness not visible if due date in the future, even after using up all attempts
-        ({
-             'show_correctness': 'past_due',
-             'max_attempts': '1',
-             'attempts': '1',
-             'due': 'tomorrow_str',
-         }, False),
+        ({'show_correctness': 'past_due', 'max_attempts': '1', 'attempts': '1', 'due': 'tomorrow_str', }, False),
         # Correctness visible if due date in the past
-        ({
-             'show_correctness': 'past_due',
-             'max_attempts': '1',
-             'attempts': '0',
-             'due': 'yesterday_str',
-         }, True),
+        ({'show_correctness': 'past_due', 'max_attempts': '1', 'attempts': '0', 'due': 'yesterday_str', }, True),
         # Correctness not visible if due date in the future
-        ({
-             'show_correctness': 'past_due',
-             'max_attempts': '1',
-             'attempts': '0',
-             'due': 'tomorrow_str',
-         }, False),
+        ({'show_correctness': 'past_due', 'max_attempts': '1', 'attempts': '0', 'due': 'tomorrow_str', }, False),
         # Correctness not visible because grace period hasn't expired,
         # even after using up all attempts
         ({'show_correctness': 'past_due', 'max_attempts': '1', 'attempts': '1', 'due': 'yesterday_str',
