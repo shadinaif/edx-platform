@@ -78,13 +78,8 @@ class CapaFactory(object):
         """
         Return the key stored in the capa problem answer dict
         """
-        return (
-            "%s_%d_%d" % (
-            "-".join(['i4x', 'edX', 'capa_test', 'problem', 'SampleProblem%d' % cls.num]),
-            response_num,
-            input_num
-        )
-        )
+        return ("%s_%d_%d" % ("-".join(['i4x', 'edX', 'capa_test', 'problem', 'SampleProblem%d' % cls.num]),
+                              response_num, input_num))
 
     @classmethod
     def create(cls, attempts=None, problem_state=None, correct=False, xml=None, override_get_score=True, **kwargs):
@@ -298,8 +293,7 @@ class ProblemBlockTest(unittest.TestCase):
              'show_correctness': 'past_due',
              'max_attempts': '1',
              'due': 'yesterday_str',
-         }, True, True),
-    )
+         }, True, True))
     @ddt.unpack
     def test_showanswer_hide_correctness(self, problem_data, answer_available_no_attempt,
                                          answer_available_after_attempt):
@@ -649,8 +643,7 @@ class ProblemBlockTest(unittest.TestCase):
              'attempts': '1',
              'due': 'yesterday_str',
              'graceperiod': 'two_day_delta_str',
-         }, False),
-    )
+         }, False))
     @ddt.unpack
     def test_show_correctness_past_due(self, problem_data, expected_result):
         """
