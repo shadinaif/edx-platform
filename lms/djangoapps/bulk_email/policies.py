@@ -1,3 +1,4 @@
+"""Course Email optOut Policy"""
 from __future__ import absolute_import
 
 from edx_ace.channel import ChannelType
@@ -16,7 +17,8 @@ class CourseEmailOptout(Policy):
 
         # pylint: disable=line-too-long
         course_keys = [CourseKey.from_string(course_id) for course_id in course_ids]
-        if Optout.objects.filter(user__username=message.recipient.username, course_id__in=course_keys).count() == len(course_keys):
+        if Optout.objects.filter(user__username=message.recipient.username, course_id__in=course_keys).count() == len(
+            course_keys):
             return PolicyResult(deny={ChannelType.EMAIL})
 
         return PolicyResult(deny=frozenset())
