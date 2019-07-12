@@ -119,8 +119,7 @@ def check_verify_status_by_course(user, course_enrollments):
 
     # Retrieve verification deadlines for the enrolled courses
     enrolled_course_keys = [enrollment.course_id for enrollment in course_enrollments]
-    course_deadlines = VerificationDeadline.deadlines_for_courses(enrolled_course_keys)
-
+    course_deadlines = VerificationDeadline.deadlines_for_enrolled_courses(user)
     recent_verification_datetime = None
 
     for enrollment in course_enrollments:
