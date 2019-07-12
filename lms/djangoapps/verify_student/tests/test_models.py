@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+from __future__ import absolute_import
+
 import json
 from datetime import timedelta
 
@@ -6,19 +8,21 @@ import boto
 import ddt
 import mock
 import requests.exceptions
+import six
 from django.conf import settings
 from django.test import TestCase
 from django.utils.timezone import now
 from freezegun import freeze_time
 from mock import patch
 from opaque_keys.edx.keys import CourseKey
+from six.moves import range
 from testfixtures import LogCapture
 
 from common.test.utils import MockS3Mixin
 from lms.djangoapps.verify_student.models import (
+    ManualVerification,
     SoftwareSecurePhotoVerification,
     SSOVerification,
-    ManualVerification,
     VerificationDeadline,
     VerificationException
 )
@@ -257,7 +261,8 @@ class TestPhotoVerification(TestVerification, MockS3Mixin, ModuleStoreTestCase):
         user = UserFactory.create()
         attempt = SoftwareSecurePhotoVerification(user=user)
         attempt.status = 'denied'
-        attempt.error_msg = '[{"userPhotoReasons": ["Face out of view"]}, {"photoIdReasons": ["Photo hidden/No photo", "ID name not provided"]}]'
+        attempt.error_msg = '[{"userPhotoReasons": ["Face out of view"]}, {"photoIdReasons": ["Photo hidden/No ' \
+                            'photo", "ID name not provided"]}] '
         parsed_error_msg = attempt.parsed_error_msg()
         self.assertEquals(parsed_error_msg, ['id_image_missing_name', 'user_image_not_clear', 'id_image_not_clear'])
 
@@ -452,7 +457,7 @@ class VerificationDeadlineTest(CacheIsolationTestCase):
             CourseKey.from_string("edX/DemoX/Fall"): now(),
             CourseKey.from_string("edX/DemoX/Spring"): now() + timedelta(days=1)
         }
-        course_keys = deadlines.keys()
+        course_keys = list(deadlines.keys())
 
         # Initially, no deadlines are set
         with self.assertNumQueries(1):
@@ -460,7 +465,7 @@ class VerificationDeadlineTest(CacheIsolationTestCase):
             self.assertEqual(all_deadlines, {})
 
         # Create the deadlines
-        for course_key, deadline in deadlines.iteritems():
+        for course_key, deadline in six.iteritems(deadlines):
             VerificationDeadline.objects.create(
                 course_key=course_key,
                 deadline=deadline,
