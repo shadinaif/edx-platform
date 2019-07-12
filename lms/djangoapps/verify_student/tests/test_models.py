@@ -98,6 +98,7 @@ class TestVerification(TestCase):
     """
     Common tests across all types of Verications (e.g., SoftwareSecurePhotoVerication, SSOVerification)
     """
+
     def verification_active_at_datetime(self, attempt):
         """
         Tests to ensure the Verification is active or inactive at the appropriate datetimes.
@@ -261,8 +262,7 @@ class TestPhotoVerification(TestVerification, MockS3Mixin, ModuleStoreTestCase):
         user = UserFactory.create()
         attempt = SoftwareSecurePhotoVerification(user=user)
         attempt.status = 'denied'
-        attempt.error_msg = '[{"userPhotoReasons": ["Face out of view"]}, {"photoIdReasons": ["Photo hidden/No ' \
-                            'photo", "ID name not provided"]}] '
+        attempt.error_msg = '[{"userPhotoReasons": ["Face out of view"]}, {"photoIdReasons": ["Photo hidden/No photo", "ID name not provided"]}]'
         parsed_error_msg = attempt.parsed_error_msg()
         self.assertEquals(parsed_error_msg, ['id_image_missing_name', 'user_image_not_clear', 'id_image_not_clear'])
 
@@ -429,6 +429,7 @@ class SSOVerificationTest(TestVerification):
     """
     Tests for the SSOVerification model
     """
+
     def test_active_at_datetime(self):
         user = UserFactory.create()
         attempt = SSOVerification.objects.create(user=user)
@@ -439,6 +440,7 @@ class ManualVerificationTest(TestVerification):
     """
     Tests for the ManualVerification model
     """
+
     def test_active_at_datetime(self):
         user = UserFactory.create()
         verification = ManualVerification.objects.create(user=user)
