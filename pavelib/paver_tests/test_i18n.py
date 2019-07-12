@@ -32,7 +32,7 @@ source_lang = en
 type = PO
 
 """
-
+# xss-lint: disable=python-concat-html
 TX_CONFIG_RELEASE = TX_CONFIG_SIMPLE + """\
 [edx-platform.release-zebrawood]
 file_filter = conf/locale/<lang>/LC_MESSAGES/django.po
